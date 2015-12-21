@@ -80,7 +80,6 @@ public class Fragment_SongList extends Fragment {
                 }
 
                 mainActivity.intentToservice(2,mainActivity.currentListItem,0);
-
                 mainActivity.callLoadLrc(mainActivity.currentListItem);
             }
         });

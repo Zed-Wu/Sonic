@@ -64,7 +64,7 @@ public class LrcView extends ScrollView {
         if (fileName == null)
             Log.e(TAG, "file name is null");
 
-        //fileName = fileName.replace(" ","");
+        fileName = fileName.replace(" ","");
         //String path = "/storage/sdcard1/Musiclrc/" + fileName + ".lrc";
         String path = fileName + ".lrc";
         File file = new File(path);
@@ -209,7 +209,7 @@ public class LrcView extends ScrollView {
             return;
         for(int i = 0; i < lyricItems.size(); i++) {
             if(i == index)
-                lyricItems.get(i).setTextColor(Color.BLUE);
+                lyricItems.get(i).setTextColor(Color.rgb(231,103,18));
             else
                 lyricItems.get(i).setTextColor(Color.BLACK);
         }

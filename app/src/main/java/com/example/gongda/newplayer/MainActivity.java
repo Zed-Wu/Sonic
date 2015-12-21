@@ -28,7 +28,11 @@ import android.widget.TextView;
 
 import com.astuetz.PagerSlidingTabStrip;
 
+import org.angmarch.views.NiceSpinner;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -41,8 +45,7 @@ public class MainActivity extends FragmentActivity {
     private SeekBar seekBar;
     private TextView songName;
     private TextView songArtist;
-    private Spinner spinner;
-    private static final String[] order = {"循环","随机"};
+    private NiceSpinner spinner;
     private ArrayAdapter<String>spinList;
     private int playorder = 0;//0为循环，//1为随机
     //播放路径列表
@@ -93,9 +96,8 @@ public class MainActivity extends FragmentActivity {
         musicList();
         findView();
 
-        spinList = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,order);
-        spinList.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-        spinner.setAdapter(spinList);
+        List<String> dataset = new LinkedList<>(Arrays.asList("循环", "随机"));
+        spinner.attachDataSource(dataset);
 
         spinner.setOnItemSelectedListener(new SpinnerSelectedListener());
         spinner.setVisibility(View.VISIBLE);
@@ -206,7 +208,7 @@ public class MainActivity extends FragmentActivity {
         next = (ImageButton)findViewById(R.id.next);
         last = (ImageButton)findViewById(R.id.last);
         seekBar = (SeekBar)findViewById(R.id.seekBar1);
-        spinner = (Spinner)findViewById(R.id.Spinner01);
+        spinner = (NiceSpinner)findViewById(R.id.Spinner01);
         songName = (TextView)findViewById(R.id.songName);
         songArtist = (TextView)findViewById(R.id.songArtist);
         tabs = (PagerSlidingTabStrip)findViewById(R.id.tabs);
@@ -221,8 +223,8 @@ public class MainActivity extends FragmentActivity {
     }
 
     void callLoadLrc(int Item){
-        //String[] fileName = myMusicList.get(Item).split(".mp3");
-        String[] fileName = playList.get(Item).split(".mp3");
+        String[] fileName = myMusicList.get(Item).split(".mp3");
+        //String[] fileName = playList.get(Item).split(".mp3");
         try{
             fragment_lyric.lrcView.LoadLrc(fileName[0]);
         }
