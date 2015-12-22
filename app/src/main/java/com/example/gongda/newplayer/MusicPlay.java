@@ -2,8 +2,10 @@ package com.example.gongda.newplayer;
 
 import android.app.Activity;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -14,26 +16,17 @@ import java.security.Provider;
  * Created by GongDa on 2015/11/25.
  */
 public class MusicPlay extends Service implements MediaPlayer.OnCompletionListener {
-    private MediaPlayer mp;
-    private int temp = 0;
+    private static MediaPlayer mp;
+    private int temp = -1;//未开始播放为-1，在播放为0，暂停为1
     private Thread thread = null;
     private int progress = 0;
     private int time = 0;
-    private Status status;
-
-    private enum Status{
-        IDEL,
-        PLAYING,
-        SWITCHING
-    }
 
     @Override
     public void onCreate(){
         super.onCreate();
         mp = new MediaPlayer();
         mp.setOnCompletionListener(this);
-
-
     }
 
     @Override
@@ -48,13 +41,8 @@ public class MusicPlay extends Service implements MediaPlayer.OnCompletionListen
         Log.d("wukun", "onCommand");
         if(intent != null) {
             int state = intent.getIntExtra("state", 0);
-            int progress = intent.getIntExtra("progress", 0);
             String path = intent.getStringExtra("path");
             switch (state) {
-                case 1://停止
-                    if (mp.isPlaying())
-                        mp.stop();
-                    break;
                 case 2://播放
                     play(path, state);
                     break;
@@ -68,22 +56,32 @@ public class MusicPlay extends Service implements MediaPlayer.OnCompletionListen
                     play(path, state);
                     break;
                 case 6:
+                    progress = intent.getIntExtra("progress",progress);
                     mp.seekTo(progress);
+                    break;
+                default:
                     break;
             }
         }
-        return super.onStartCommand(intent,flags,startId);
+        return START_STICKY;
+        //return super.onStartCommand(intent,flags,startId);
     }
 
     public void play(String path,int state){
-        while(status == Status.SWITCHING);
-        status = Status.SWITCHING;
         try{
-            if(temp == 0 || state == 3 || state == 5) {
+            if(temp == 0 || temp == -1 || state == 3 || state == 5) {
                 mp.stop();
                 mp.reset();
                 mp.setDataSource(path);
-                mp.prepare();
+                try {
+                    mp.prepare();
+                }
+                catch (IllegalStateException e){
+                    e.printStackTrace();
+                }
+                for(int i = 0;i < 1000000;i ++){//等待prepare
+                    ;
+                }
             }
             mp.start();
             Intent retIntent = new Intent();
@@ -125,7 +123,6 @@ public class MusicPlay extends Service implements MediaPlayer.OnCompletionListen
         }catch (IOException e){
             e.printStackTrace();
         }
-        status = Status.PLAYING;
     }
 
     public void pause(){

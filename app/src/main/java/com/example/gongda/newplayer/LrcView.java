@@ -64,8 +64,6 @@ public class LrcView extends ScrollView {
         if (fileName == null)
             Log.e(TAG, "file name is null");
 
-        fileName = fileName.replace(" ","");
-        //String path = "/storage/sdcard1/Musiclrc/" + fileName + ".lrc";
         String path = fileName + ".lrc";
         File file = new File(path);
         Log.d(TAG, "load lrc");

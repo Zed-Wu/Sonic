@@ -1,7 +1,6 @@
 package com.example.gongda.newplayer;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -61,7 +60,7 @@ public class Fragment_SongList extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_fragment1, container, false);
+        return inflater.inflate(R.layout.fragment_songlist, container, false);
     }
 
     @Override
@@ -75,12 +74,14 @@ public class Fragment_SongList extends Fragment {
                 mainActivity.changeCurrentListItem(i);
 
                 if(mainActivity.getStartState() == true){
-                    mainActivity.getStart().setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_pause));
+                    mainActivity.getStart().setImageDrawable(getResources()
+                            .getDrawable(android.R.drawable.ic_media_pause));
                     mainActivity.setStartState(false);
                 }
 
                 mainActivity.intentToservice(2,mainActivity.currentListItem,0);
                 mainActivity.callLoadLrc(mainActivity.currentListItem);
+                mainActivity.setSeekBar();
             }
         });
     }
