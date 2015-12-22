@@ -1,7 +1,9 @@
 package com.example.gongda.newplayer;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -55,7 +57,7 @@ public class MainActivity extends FragmentActivity {
     //作者列表
     public List<String> artistList = new ArrayList<String>();
     //当前播放歌曲的索引
-    public int currentListItem=0;
+    public int currentListItem=-1;
 
     ArrayAdapter<String> musicList;
     ViewPager vp;
@@ -93,8 +95,11 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        musicList();
+
         findView();
+        musicList();
+
+        seekBar.setEnabled(false);
 
         List<String> dataset = new LinkedList<>(Arrays.asList("循环", "随机"));
         spinner.attachDataSource(dataset);
@@ -170,16 +175,32 @@ public class MainActivity extends FragmentActivity {
     //获取音乐列表
     public void musicList(){
         Cursor cu = MainActivity.this.getContentResolver().query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,projection,null,null,MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,projection,
+                null,null,MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         if(cu.moveToFirst()){
             do{
                 myMusicList.add(cu.getString(2));//路径
                 playList.add(cu.getString(7));//作者-歌曲名列表
                 artistList.add(cu.getString(4));//作者名
             }while(cu.moveToNext());
+            musicList=new ArrayAdapter<String>
+                    (MainActivity.this,R.layout.support_simple_spinner_dropdown_item, playList);
         }
-        musicList=new ArrayAdapter<String>
-                (MainActivity.this,R.layout.support_simple_spinner_dropdown_item, playList);
+        else{
+            start.setEnabled(false);
+            next.setEnabled(false);
+            last.setEnabled(false);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("提示");
+            builder.setMessage("本地无歌曲");
+            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    ;
+                }
+            });
+            builder.show();
+        }
         cu.close();
     }
 
@@ -198,6 +219,8 @@ public class MainActivity extends FragmentActivity {
     public void setStartState(boolean i){
         start_state = i;
     }
+
+    public void setSeekBar(){seekBar.setEnabled(true);}
 
     public ImageButton getStart(){
         return start;
@@ -240,6 +263,8 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
+                if(currentListItem == -1)
+                    currentListItem = 0;
                 if(start_state == true){//未播放
                     start.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_pause));
                     start_state = false;
@@ -247,6 +272,7 @@ public class MainActivity extends FragmentActivity {
                     intentToservice(2,currentListItem,0);
 
                     callLoadLrc(currentListItem);
+                    seekBar.setEnabled(true);
                 }
                 else {//暂停
                     start.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_play));
@@ -263,7 +289,9 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-                if(playorder == 0) {
+                if(currentListItem == -1)
+                    currentListItem = 0;
+                else if(playorder == 0) {
                     currentListItem++;
                     if (currentListItem == myMusicList.size()) {
                         currentListItem = 0;
@@ -278,6 +306,7 @@ public class MainActivity extends FragmentActivity {
                 intentToservice(3,currentListItem,0);
 
                 callLoadLrc(currentListItem);
+                seekBar.setEnabled(true);
 
                 next.setClickable(false);
                 last.setClickable(false);
@@ -289,7 +318,9 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-                if(playorder == 0) {
+                if(currentListItem == -1)
+                    currentListItem = myMusicList.size() - 1;
+                else if(playorder == 0) {
                     if(currentListItem == 0){
                         currentListItem = myMusicList.size() - 1;
                     }
@@ -298,7 +329,7 @@ public class MainActivity extends FragmentActivity {
                     }
                 }
                 else{
-                    currentListItem = Math.abs(new Random().nextInt())% myMusicList.size();
+                    currentListItem = Math.abs(new Random().nextInt()) % myMusicList.size();
                 }
                 start.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_pause));
                 start_state = false;
@@ -306,6 +337,7 @@ public class MainActivity extends FragmentActivity {
                 intentToservice(5,currentListItem,0);
 
                 callLoadLrc(currentListItem);
+                seekBar.setEnabled(true);
 
                 next.setClickable(false);
                 last.setClickable(false);
@@ -407,13 +439,14 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void run() {
                 while(true) {
-                    sendMsg(currentListItem);
-                try{
-                    showsong.sleep(200);
-                }
-                catch (InterruptedException e){
-                    e.printStackTrace();
-                }
+                    if(currentListItem != -1)
+                        sendMsg(currentListItem);
+                    try{
+                        showsong.sleep(200);
+                    }
+                    catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                 }
             }
         });
