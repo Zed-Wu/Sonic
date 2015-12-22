@@ -73,7 +73,6 @@ public class LrcView extends ScrollView {
             lyricTimeList.add(1L);
             refreshLyricList();
             return ;
-            //throw newluaunch Exception("lrc not found...");
         }
 
         Log.d(TAG, "file exists");
